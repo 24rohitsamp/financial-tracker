@@ -154,11 +154,33 @@ public class FinancialTracker {
             String input = scanner.nextLine().trim();
 
             switch (input) {
-                case "1" -> {/* TODO – month-to-date report */ }
-                case "2" -> {/* TODO – previous month report */ }
-                case "3" -> {/* TODO – year-to-date report   */ }
-                case "4" -> {/* TODO – previous year report  */ }
-                case "5" -> {/* TODO – prompt for vendor then report */ }
+                case "1" -> {
+                    LocalDate today = LocalDate.now();
+                    LocalDate start = today.withDayOfMonth(1)
+                            filterTransactionsByDate(start, today);
+                }
+                case "2" -> {
+                    LocalDate today = LocalDate.now()
+                            LocalDate start = today.minusMonths(1).withDayOfMonth(1);
+                    LocalDate end = today.withDayOfMonth(1).minusDays(1);
+                    filterTransactionsByDate(start, today);
+                }
+                case "3" -> {
+                    LocalDate today = LocalDate.now();
+                    LocalDate start = today.withDayOfYear(1);
+                    filterTransactionsByDate();
+                }
+                case "4" -> {
+                    LocalDate today = LocalDate.now();
+                    LocalDate start = LocalDate.of(today.getYear(), -1,1,1);
+                    LocalDate end = LocalDate.of(today.getYear(), -1,12,31);
+                    filterTransactionsByDate(start,end);
+                }
+                case "5" -> {
+                    System.out.print("Enter Vendor Name: ");
+                    String vendor = scanner.nextLine();
+                    filterTransactionsByVendor(vendor);
+                }
                 case "6" -> customSearch(scanner);
                 case "0" -> running = false;
                 default -> System.out.println("Invalid option");
