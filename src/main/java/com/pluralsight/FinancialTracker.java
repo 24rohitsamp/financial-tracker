@@ -71,9 +71,43 @@ public class FinancialTracker {
      * • Each line looks like: date|time|description|vendor|amount
      */
     public static void loadTransactions(String fileName) {
-        // TODO: create file if it does not exist, then read each line,
-        //       parse the five fields, build a Transaction object,
-        //       and add it to the transactions list.
+            try {
+                File file = new File(fileName);
+
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+
+                Scanner fileScanner = new Scanner(file);
+
+                while (fileScanner.hasNextLine()) {
+                    String line = fileScanner.nextLine();
+
+                    if (line.trim().isEmpty()) {
+                        continue;
+                    }
+
+                    String[] parts = line.split("\\|");
+
+                    if (parts.length == 5) {
+                        LocalDate date = LocalDate.parse(parts[0], DATE_FMT);
+                        LocalTime time = LocalTime.parse(parts[1], TIME_FMT);
+                        String description = parts[2];
+                        String vendor = parts[3];
+                        double amount = Double.parseDouble(parts[4]);
+
+                        Transaction transaction = new Transaction(date, time, description, vendor, amount);
+                        transactions.add(transaction);
+                    }
+                }
+
+                fileScanner.close();
+
+            } catch (Exception e) {
+                System.out.println("Error loading transactions: " + e.getMessage());
+            }
+        }
+
     }
 
     /* ------------------------------------------------------------------
@@ -87,7 +121,8 @@ public class FinancialTracker {
      * Store the amount as-is (positive) and append to the file.
      */
     private static void addDeposit(Scanner scanner) {
-        // TODO
+        addTransaction(scanner, false);
+
     }
 
     /**
@@ -95,11 +130,48 @@ public class FinancialTracker {
      * Amount must be entered as a positive number,
      * then converted to a negative amount before storing.
      */
-    private static void addPayment(Scanner scanner) {
-        // TODO
-    }
+        private static void addTransaction(Scanner scanner, boolean isDeposit) {
+            try {
+                System.out.print("Enter date and time yyyy-MM-dd HH:mm:ss: ");
+                String dateTimeInput = scanner.nextLine();
 
-    /* ------------------------------------------------------------------
+                System.out.print("Enter description: ");
+                String description = scanner.nextLine();
+
+                System.out.print("Enter vendor: ");
+                String vendor = scanner.nextLine();
+
+                System.out.print("Enter amount: ");
+                double amount = Double.parseDouble(scanner.nextLine());
+
+                if (amount <= 0) {
+                    System.out.println("Amount must be positive.");
+                    return;
+                }
+
+                if (!isDeposit) {
+                    amount *= -1;
+                }
+
+                String[] dateTimeParts = dateTimeInput.split(" ");
+                LocalDate date = LocalDate.parse(dateTimeParts[0], DATE_FMT);
+                LocalTime time = LocalTime.parse(dateTimeParts[1], TIME_FMT);
+
+                Transaction transaction = new Transaction(date, time, description, vendor, amount);
+                transactions.add(transaction);
+
+                FileWriter writer = new FileWriter(FILE_NAME, true);
+                writer.write(transaction.toFileString() + "\n");
+                writer.close();
+
+                System.out.println("Transaction added.");
+
+            } catch (Exception e) {
+                System.out.println("Invalid input. Transaction not added.");
+            }
+        }
+
+        /* ------------------------------------------------------------------
        Ledger menu
        ------------------------------------------------------------------ */
     private static void ledgerMenu(Scanner scanner) {
@@ -129,11 +201,27 @@ public class FinancialTracker {
     /* ------------------------------------------------------------------
        Display helpers: show data in neat columns
        ------------------------------------------------------------------ */
-    private static void displayLedger() { /* TODO – print all transactions in column format */ }
+    private static void displayLedger() {
+        for (Transaction t : transactions) {
+            System.out.println(t);
+        }
+    }
 
-    private static void displayDeposits() { /* TODO – only amount > 0               */ }
+        private static void displayDeposits() {
+            for (Transaction t : transactions) {
+                if (t.getAmount() > 0) {
+                    System.out.println(t);
+                }
+            }
+        }
 
-    private static void displayPayments() { /* TODO – only amount < 0               */ }
+        private static void displayPayments() {
+            for (Transaction t : transactions) {
+                if (t.getAmount() < 0) {
+                    System.out.println(t);
+                }
+            }
+        }
 
     /* ------------------------------------------------------------------
        Reports menu
@@ -156,11 +244,11 @@ public class FinancialTracker {
             switch (input) {
                 case "1" -> {
                     LocalDate today = LocalDate.now();
-                    LocalDate start = today.withDayOfMonth(1)
+                    LocalDate start = today.withDayOfMonth(1);
                             filterTransactionsByDate(start, today);
                 }
                 case "2" -> {
-                    LocalDate today = LocalDate.now()
+                    LocalDate today = LocalDate.now();
                             LocalDate start = today.minusMonths(1).withDayOfMonth(1);
                     LocalDate end = today.withDayOfMonth(1).minusDays(1);
                     filterTransactionsByDate(start, today);
