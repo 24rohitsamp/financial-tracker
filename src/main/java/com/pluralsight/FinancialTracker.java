@@ -126,6 +126,8 @@ public class FinancialTracker {
         }
 
         private static void addPayment(Scanner scanner) {
+            addTransaction(scanner, false);
+        }
             /**
              * Same prompts as addDeposit.
              * Amount must be entered as a positive number,
