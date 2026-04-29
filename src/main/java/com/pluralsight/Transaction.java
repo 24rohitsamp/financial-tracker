@@ -1,11 +1,10 @@
 package com.pluralsight;
 
-import org.w3c.dom.html.HTMLImageElement;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class Transaction {
+
     private LocalDate date;
     private LocalTime time;
     private String description;
@@ -20,28 +19,23 @@ public class Transaction {
         this.amount = amount;
     }
 
-    public LocalDate getDate() {
-        return date;
-    }
+    // Getters
+    public LocalDate getDate() { return date; }
+    public LocalTime getTime() { return time; }
+    public String getDescription() { return description; }
+    public String getVendor() { return vendor; }
+    public double getAmount() { return amount; }
 
-    public LocalTime getTime() {
-        return time;
-    }
+    // Setters
+    public void setDate(LocalDate date) { this.date = date; }
+    public void setTime(LocalTime time) { this.time = time; }
+    public void setDescription(String description) { this.description = description; }
+    public void setVendor(String vendor) { this.vendor = vendor; }
+    public void setAmount(double amount) { this.amount = amount; }
 
-    public String getDescription() {
-        return description;
-    }
 
-    public String getVendor() {
-        return vendor;
-    }
-
-    public double getAmount() {
-        return amount;
+    public String toString() {
+        return String.format("Transaction{date=%s, time=%s, description='%s', vendor='%s', amount=%.2f}",
+                date, time, description, vendor, amount);
     }
 }
-
-
-
-
-
