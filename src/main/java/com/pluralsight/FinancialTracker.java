@@ -391,7 +391,7 @@ public class FinancialTracker {
         System.out.print("Vendor: ");
         String vendor = scanner.nextLine().trim();
 
-        System.out.print("Amount (exact, e.g. -45.00): ");
+        System.out.print("Amount (exact, e.g. -28.00): ");
         Double amount = parseDouble(scanner.nextLine().trim());
 
         printHeader();
