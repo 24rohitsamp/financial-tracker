@@ -426,3 +426,14 @@ public class FinancialTracker {
             return null;
         }
     }
+
+    private static Double parseDouble(String s) {
+        if (s == null || s.isEmpty()) return null;
+        try {
+            return Double.parseDouble(s);
+        } catch (Exception e) {
+            System.out.println("Invalid number: " + s);
+            return null;
+        }
+    }
+}
