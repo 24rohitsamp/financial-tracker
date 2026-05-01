@@ -1,4 +1,4 @@
-# Project Title
+# Financial Tracker Application
 
 ## Description of the Project
 
