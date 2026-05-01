@@ -48,6 +48,9 @@ Demo of payments ledger app
 
 [Entire Screen - Screencastify - May 1, 2026 12_59 AM.webm](https://github.com/user-attachments/assets/343112e6-dcae-4805-ab82-894459a2a7ec)
 
+Demo of transactions year to date 
+
+[Entire Screen - Screencastify - May 1, 2026 1_14 AM.webm](https://github.com/user-attachments/assets/fb4b5c85-a993-473d-8ccd-b48070ba28b9)
 
 ## Future Work
 
