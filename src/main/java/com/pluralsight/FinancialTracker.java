@@ -1,27 +1,16 @@
 package com.pluralsight;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-/*
- * Capstone skeleton – personal finance tracker.
- * ------------------------------------------------
- * File format  (pipe-delimited)
- *     yyyy-MM-dd|HH:mm:ss|description|vendor|amount
- * A deposit has a positive amount; a payment is stored
- * as a negative amount.
- */
+
 public class FinancialTracker {
 
-    /* ------------------------------------------------------------------
-       Shared data and formatters
-       ------------------------------------------------------------------ */
+
     private static final ArrayList<Transaction> transactions = new ArrayList<>();
     private static final String FILE_NAME = "transactions.csv";
 
@@ -33,9 +22,7 @@ public class FinancialTracker {
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern(TIME_PATTERN);
     private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern(DATETIME_PATTERN);
 
-    /* ------------------------------------------------------------------
-       Main menu
-       ------------------------------------------------------------------ */
+
     public static void main(String[] args) {
         loadTransactions(FILE_NAME);
 
@@ -63,28 +50,15 @@ public class FinancialTracker {
         scanner.close();
     }
 
-    /* ------------------------------------------------------------------
-       File I/O
-       ------------------------------------------------------------------ */
-
-    /**
-     * Load transactions from FILE_NAME.
-     * • If the file doesn't exist, create an empty one so that future writes succeed.
-     * • Each line looks like: date|time|description|vendor|amount
-     */
     public static void loadTransactions(String fileName) {
-        File file = new File(fileName);
 
-        // Create the file if it does not exist
-        try {
-            if (!file.exists()) {
-                file.createNewFile();
-                return; // nothing to load from a brand-new file
-            }
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
 
-            Scanner fileScanner = new Scanner(file);
-            while (fileScanner.hasNextLine()) {
-                String line = fileScanner.nextLine().trim();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+
                 if (line.isEmpty()) continue;
 
                 String[] parts = line.split("\\|");
@@ -96,24 +70,19 @@ public class FinancialTracker {
                 String vendor = parts[3];
                 double amount = Double.parseDouble(parts[4]);
 
-                transactions.add(new Transaction(date, time, description, vendor, amount));
+                Transaction transaction = new Transaction(
+                        date, time, description, vendor, amount
+                );
+
+                transactions.add(transaction);
             }
-            fileScanner.close();
+
         } catch (Exception e) {
             System.out.println("Error loading transactions: " + e.getMessage());
         }
     }
 
-    /* ------------------------------------------------------------------
-       Add new transactions
-       ------------------------------------------------------------------ */
 
-    /**
-     * Prompt for ONE date+time string in the format
-     * "yyyy-MM-dd HH:mm:ss", plus description, vendor, amount.
-     * Validate that the amount entered is positive.
-     * Store the amount as-is (positive) and append to the file.
-     */
     private static void addDeposit(Scanner scanner) {
         try {
             System.out.print("Enter date and time (yyyy-MM-dd HH:mm:ss): ");
@@ -148,11 +117,7 @@ public class FinancialTracker {
         }
     }
 
-    /**
-     * Same prompts as addDeposit.
-     * Amount must be entered as a positive number,
-     * then converted to a negative amount before storing.
-     */
+
     private static void addPayment(Scanner scanner) {
         try {
             System.out.print("Enter date and time (yyyy-MM-dd HH:mm:ss): ");
@@ -178,7 +143,6 @@ public class FinancialTracker {
                 return;
             }
 
-            // Store payments as negative
             double negativeAmount = -amount;
             Transaction t = new Transaction(date, time, description, vendor, negativeAmount);
             transactions.add(t);
@@ -189,10 +153,9 @@ public class FinancialTracker {
         }
     }
 
-    /** Appends a single transaction to the CSV file. */
     private static void saveTransaction(Transaction t) {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(FILE_NAME, true))) {
-            writer.println(
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(FILE_NAME, true))) {
+            bufferedWriter.write(
                     t.getDate().format(DATE_FMT) + "|" +
                             t.getTime().format(TIME_FMT) + "|" +
                             t.getDescription() + "|" +
@@ -204,9 +167,7 @@ public class FinancialTracker {
         }
     }
 
-    /* ------------------------------------------------------------------
-       Ledger menu
-       ------------------------------------------------------------------ */
+
     private static void ledgerMenu(Scanner scanner) {
         boolean running = true;
         while (running) {
@@ -231,14 +192,13 @@ public class FinancialTracker {
         }
     }
 
-    /* ------------------------------------------------------------------
-       Display helpers: show data in neat columns
-       ------------------------------------------------------------------ */
+
     private static void printHeader() {
         System.out.printf("%-12s %-10s %-25s %-20s %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
         System.out.println("-".repeat(80));
     }
+
 
     private static void printTransaction(Transaction t) {
         System.out.printf("%-12s %-10s %-25s %-20s %10.2f%n",
@@ -252,10 +212,12 @@ public class FinancialTracker {
     private static void displayLedger() {
         System.out.println("\n--- All Transactions ---");
         printHeader();
-        for (int i = transactions.size() - 1; i >= 0; i--) {
-            printTransaction(transactions.get(i));
+        for (Transaction transaction : transactions) {
+            printTransaction(transactions);
         }
-        System.out.println();
+    }
+
+    private static void printTransaction(ArrayList<Transaction> transactions) {
     }
 
     private static void displayDeposits() {
@@ -282,9 +244,7 @@ public class FinancialTracker {
         System.out.println();
     }
 
-    /* ------------------------------------------------------------------
-       Reports menu
-       ------------------------------------------------------------------ */
+
     private static void reportsMenu(Scanner scanner) {
         boolean running = true;
         while (running) {
@@ -302,14 +262,12 @@ public class FinancialTracker {
 
             switch (input) {
                 case "1" -> {
-                    // Month-to-date: from the first of the current month to today
                     LocalDate now = LocalDate.now();
                     LocalDate start = now.withDayOfMonth(1);
                     System.out.println("\n--- Month To Date ---");
                     filterTransactionsByDate(start, now);
                 }
                 case "2" -> {
-                    // Previous month: first to last day of last month
                     LocalDate now = LocalDate.now();
                     LocalDate start = now.minusMonths(1).withDayOfMonth(1);
                     LocalDate end = now.withDayOfMonth(1).minusDays(1);
@@ -317,14 +275,12 @@ public class FinancialTracker {
                     filterTransactionsByDate(start, end);
                 }
                 case "3" -> {
-                    // Year-to-date: Jan 1 of current year to today
                     LocalDate now = LocalDate.now();
                     LocalDate start = now.withDayOfYear(1);
                     System.out.println("\n--- Year To Date ---");
                     filterTransactionsByDate(start, now);
                 }
                 case "4" -> {
-                    // Previous year: Jan 1 to Dec 31 of last year
                     LocalDate now = LocalDate.now();
                     LocalDate start = now.minusYears(1).withDayOfYear(1);
                     LocalDate end = now.withDayOfYear(1).minusDays(1);
@@ -344,9 +300,6 @@ public class FinancialTracker {
         }
     }
 
-    /* ------------------------------------------------------------------
-       Reporting helpers
-       ------------------------------------------------------------------ */
     private static void filterTransactionsByDate(LocalDate start, LocalDate end) {
         printHeader();
         boolean found = false;
@@ -414,9 +367,7 @@ public class FinancialTracker {
         System.out.println();
     }
 
-    /* ------------------------------------------------------------------
-       Utility parsers (you can reuse in many places)
-       ------------------------------------------------------------------ */
+
     private static LocalDate parseDate(String s) {
         if (s == null || s.isEmpty()) return null;
         try {
